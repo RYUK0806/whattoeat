@@ -10,6 +10,8 @@ export async function POST(req: NextRequest) {
   const validUser = process.env.ADMIN_USERNAME;
   const validPass = process.env.ADMIN_PASSWORD;
 
+  console.log("ALL ADMIN ENV VARS:", Object.keys(process.env).filter(k => k.includes("ADMIN")));
+
   console.log("DEBUG AUTH:", {
     envUsernameExists: !!process.env.ADMIN_USERNAME,
     envPasswordExists: !!process.env.ADMIN_PASSWORD,
