@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { sql } from "@/lib/db";
 
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 const GROQ_MODEL   = "llama-3.3-70b-versatile";
@@ -241,6 +242,17 @@ export async function POST(request: NextRequest) {
         address:        match?.address   ?? null,
       };
     });
+
+    // Track Groq call + search — fire-and-forget, never blocks response
+    sql`INSERT INTO api_calls (service, endpoint) VALUES ('groq', 'chat/completions')`.catch(() => {});
+    sql`
+      INSERT INTO searches
+        (city, country, mood, taste_level, cuisine, budget, preference, restaurants_shown)
+      VALUES (
+        ${city}, ${country}, ${mood}, ${taste}, ${cuisine}, ${budget},
+        ${foodPref}, ${String(restaurants.length)}
+      )
+    `.catch(() => {});
 
     return Response.json({ suggestions });
   } catch (err) {

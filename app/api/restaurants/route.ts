@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { sql } from "@/lib/db";
 
 const PLACES_URL =
   "https://maps.googleapis.com/maps/api/place/nearbysearch/json";
@@ -135,6 +136,20 @@ export async function POST(request: NextRequest) {
       priceLevel: r.price_level ?? null,
       isOpenNow:  r.opening_hours?.open_now ?? true, // passed opennow filter → open
     }));
+
+  // Track Google Places call — fire-and-forget, never blocks response
+  sql`INSERT INTO api_calls (service, endpoint) VALUES ('google', 'places/nearbysearch')`.catch(() => {});
+
+  // Auto-pause if monthly quota is critically high
+  sql`
+    UPDATE app_settings SET app_enabled = FALSE
+    WHERE app_enabled = TRUE
+    AND (
+      SELECT COUNT(*) FROM api_calls
+      WHERE service = 'google'
+      AND timestamp >= DATE_TRUNC('month', NOW())
+    ) >= 9000
+  `.catch(() => {});
 
   return Response.json({ restaurants });
 }
