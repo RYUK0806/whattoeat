@@ -10,6 +10,15 @@ export async function POST(req: NextRequest) {
   const validUser = process.env.ADMIN_USERNAME;
   const validPass = process.env.ADMIN_PASSWORD;
 
+  console.log("DEBUG AUTH:", {
+    envUsernameExists: !!process.env.ADMIN_USERNAME,
+    envPasswordExists: !!process.env.ADMIN_PASSWORD,
+    envUsername: process.env.ADMIN_USERNAME,
+    inputUsername: username,
+    usernameMatch: username?.trim() === process.env.ADMIN_USERNAME?.trim(),
+    passwordMatch: password?.trim() === process.env.ADMIN_PASSWORD?.trim()
+  });
+
   if (!validUser || !validPass) {
     return NextResponse.json(
       { error: "Admin credentials not configured" },
