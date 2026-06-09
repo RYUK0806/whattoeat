@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
+import { isAdminAuthenticated } from "@/lib/admin-auth";
 
 const GOOGLE_AUTO_PAUSE = 9000;
 
 export async function GET() {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const [
       totalVisits,
